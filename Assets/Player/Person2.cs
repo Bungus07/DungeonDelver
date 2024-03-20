@@ -40,7 +40,7 @@ public class Person2 : MonoBehaviour
         UnityEngine.Cursor.visible = false;
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         healthBarsript = gameObject.GetComponent<HealthBar>();
-        SwordAnimator = gameObject.GetComponentInChildren<Animator>();
+        SwordAnimator = GameObject.Find("Hand").GetComponent<Animator>();
     }
     private void Attack()
     {
