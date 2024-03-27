@@ -207,7 +207,7 @@ public class EnemyControls : MonoBehaviour
     {
         if (collision.gameObject.tag == ("Weapon"))
         {
-            DamageEnemy(PlayerScript.SwordDamage);
+            DamageEnemy(PlayerScript.WeaponDamage);
             Debug.Log("EnemyHasTakenDamage");
         }
     }

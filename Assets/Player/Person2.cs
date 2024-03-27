@@ -29,7 +29,10 @@ public class Person2 : MonoBehaviour
     private HealthBar healthBarsript;
     private EnemyControls enemyscript;
     private Animator SwordAnimator;
-    public int SwordDamage;
+    public int WeaponDamage;
+    [Header("Weapon Stuff")]
+    private GameObject BelowFeet;
+    private GameObject EquipedWeapon;
     // Start is called before the first frame update
     void Start()
     {
@@ -44,7 +47,11 @@ public class Person2 : MonoBehaviour
     }
     private void Attack()
     {
-        SwordAnimator.SetTrigger("SwordSwing");
+        if (EquipedWeapon != null)
+        {
+            SwordAnimator.SetTrigger("SwordSwing");
+            WeaponDamage = EquipedWeapon.GetComponent<Weapon>().WeaponDamage;
+        }
     }
     private void DamageTaken(int Amount, float Knockback)
     {
@@ -72,10 +79,32 @@ public class Person2 : MonoBehaviour
             Debug.Log("BeingDetected");
             Collider.gameObject.GetComponent<EnemyDetectionSphere>().Target.gameObject.GetComponent<EnemyControls>().PlayerDetect();
         }
+        if (Collider.gameObject.tag == ("Weapon"))
+        {
+            BelowFeet = Collider.gameObject;
+        }
+    }
+    private void OnTriggerExit(Collider collider)
+    {
+        if (collider.gameObject.tag == ("Weapon"))
+        {
+            BelowFeet = null;
+        }
     }
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            EquipedWeapon = BelowFeet;
+            EquipedWeapon.GetComponent<Weapon>().Equip();
+            BelowFeet = null;
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            EquipedWeapon.GetComponent <Weapon>().UnEquip();
+            EquipedWeapon = null;
+        }
        if (Input.GetKeyDown (KeyCode.Space))
         {
             if (HasJumped == true && HasCollectedDoubleJump == true) 
@@ -171,6 +200,7 @@ public class Person2 : MonoBehaviour
         }
         
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject == DoubleJumpCollectable)
