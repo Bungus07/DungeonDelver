@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Weapon : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class Weapon : MonoBehaviour
     private GameObject PlayersHand;
     public int WeaponDamage;
     public float WeaponSpeed;
+    private BoxCollider[] WeaponCollision;
+    private LayerMask Ground;
+    private LayerMask PlayerLayer;
     public enum WeaponType
     {
         Sword,
@@ -28,7 +32,15 @@ public class Weapon : MonoBehaviour
     void Start()
     {
         Player = GameObject.Find("Player");
-        PlayersHand = Player.transform.GetChild(2).gameObject;
+        PlayersHand = Player.transform.GetChild(1).gameObject;
+        WeaponCollision = gameObject.transform.GetComponentsInChildren<BoxCollider>();
+        Ground = LayerMask.GetMask("Ground");
+        PlayerLayer = LayerMask.GetMask("Player");
+        foreach (var collider in WeaponCollision)
+        {
+            collider.excludeLayers = PlayerLayer;
+        }
+        gameObject.GetComponent<CapsuleCollider>().excludeLayers = LayerMask.GetMask("Default");
     }
     public void Equip()
     {
@@ -41,6 +53,10 @@ public class Weapon : MonoBehaviour
         {
             Handle.gameObject.GetComponent<BoxCollider>().enabled = false;
         }
+        foreach (var collider in WeaponCollision)
+        {
+            collider.excludeLayers = PlayerLayer + Ground;
+        }
     }
     public void UnEquip()
     {
@@ -49,6 +65,10 @@ public class Weapon : MonoBehaviour
         foreach (GameObject Handle in Handles)
         {
             Handle.gameObject.GetComponent<BoxCollider>().enabled = true;
+        }
+        foreach (var collider in WeaponCollision)
+        {
+            collider.excludeLayers = PlayerLayer;
         }
     }
 }

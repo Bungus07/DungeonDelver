@@ -33,6 +33,14 @@ public class Person2 : MonoBehaviour
     [Header("Weapon Stuff")]
     private GameObject BelowFeet;
     private GameObject EquipedWeapon;
+    [Header("Rolling")]
+    public bool IsRolling;
+    private float RollingAngle = 0;
+    public float RollForce;
+    public float RollSpeed;
+    private Vector3 CurrentMoveDirectionInputs;
+    public BoxCollider[] PlayerCollision;
+    public GameObject Pivot;
     // Start is called before the first frame update
     void Start()
     {
@@ -51,6 +59,20 @@ public class Person2 : MonoBehaviour
         {
             SwordAnimator.SetTrigger("SwordSwing");
             WeaponDamage = EquipedWeapon.GetComponent<Weapon>().WeaponDamage;
+        }
+    }
+    private void Roll()
+    {
+        if (Grounded)
+        {
+            CurrentMoveDirectionInputs = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+            ridge.velocity = Vector3.zero;
+            if (CurrentMoveDirectionInputs == Vector3.zero)
+            {
+                CurrentMoveDirectionInputs = Vector3.forward;
+            }
+            IsRolling = true;
+            Debug.Log("ShouldBeRolling");
         }
     }
     private void DamageTaken(int Amount, float Knockback)
@@ -102,8 +124,11 @@ public class Person2 : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
-            EquipedWeapon.GetComponent <Weapon>().UnEquip();
-            EquipedWeapon = null;
+            if (EquipedWeapon != null)
+            {
+                EquipedWeapon.GetComponent<Weapon>().UnEquip();
+                EquipedWeapon = null;
+            }
         }
        if (Input.GetKeyDown (KeyCode.Space))
         {
@@ -138,6 +163,47 @@ public class Person2 : MonoBehaviour
         {
             ridge.drag = 5;
         }
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            Roll();
+        }
+        if (IsRolling)
+        {
+            RollingAngle += (RollSpeed + 1);
+            ridge.useGravity = false;
+            ridge.velocity = ((CurrentMoveDirectionInputs.x * transform.right + CurrentMoveDirectionInputs.z * transform.forward) * RollForce);
+            if (CurrentMoveDirectionInputs.z != 0 && CurrentMoveDirectionInputs.z != -1) //Fowards
+            {
+                Pivot.transform.Rotate(CurrentMoveDirectionInputs.z + RollSpeed, 0, -CurrentMoveDirectionInputs.x);
+            }
+            else if (CurrentMoveDirectionInputs.x != 0 && CurrentMoveDirectionInputs.x != -1) //Right
+            {
+                Pivot.transform.Rotate(CurrentMoveDirectionInputs.z, 0, -(CurrentMoveDirectionInputs.x + RollSpeed));
+            }
+            else if (CurrentMoveDirectionInputs.z != 0 && CurrentMoveDirectionInputs.z == -1) //Backwards
+            {
+                Pivot.transform.Rotate(-(CurrentMoveDirectionInputs.z + (RollSpeed + 2)), 0, -CurrentMoveDirectionInputs.x);
+            }
+            else if (CurrentMoveDirectionInputs.x != 0 && CurrentMoveDirectionInputs.x == -1) //Left
+            {
+                Pivot.transform.Rotate(CurrentMoveDirectionInputs.z, 0, CurrentMoveDirectionInputs.x + (RollSpeed + 2));
+            }
+            foreach (BoxCollider boxCollider in PlayerCollision)
+            {
+                boxCollider.enabled = false;
+            }
+            if (RollingAngle >= 360) 
+            {
+                Pivot.transform.localEulerAngles = new Vector3 (0, Pivot.transform.localEulerAngles.y, 0);
+                IsRolling = false;
+                RollingAngle = 0;
+                ridge.useGravity = true;
+                foreach (BoxCollider boxCollider in PlayerCollision)
+                {
+                    boxCollider.enabled = true;
+                }
+            }
+        }
     }
     private void FixedUpdate()
     {
@@ -147,6 +213,10 @@ public class Person2 : MonoBehaviour
         Rotation = Input.GetAxisRaw("Mouse X") * Sensitivity;
         Quaternion deltaRotation = Quaternion.Euler(transform.rotation.x, Rotation, transform.rotation.z * Time.fixedDeltaTime);
         ridge.MoveRotation(ridge.rotation * deltaRotation);
+        if (!IsRolling)
+        {
+            ridge.MoveRotation(ridge.rotation * deltaRotation);
+        }
     }
     
     private void Jump() 

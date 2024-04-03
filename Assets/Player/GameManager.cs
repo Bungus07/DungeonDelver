@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        coinText.text = coinsCounter.ToString();
+       // coinText.text = coinsCounter.ToString();
         /* if (player.RespawnPoint == true)
          {
              // Reload the scene after 3 seconds
