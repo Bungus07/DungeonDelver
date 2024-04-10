@@ -8,20 +8,30 @@ public class Weapon : MonoBehaviour
 {
     public GameObject[] Handles;
     private GameObject Player;
-    private GameObject PlayersHand;
+    private GameObject PlayersRightHand;
+    private GameObject PlayersLeftHand;
     public int WeaponDamage;
     public float WeaponSpeed;
     private BoxCollider[] WeaponCollision;
     private LayerMask Ground;
     private LayerMask PlayerLayer;
+    private Person2 PlayerScript;
+    public Vector3 RotaionInRightHand;
+    public Vector3 RotaionInLeftHand;
+    public Vector3 PositionInRightHand;
+    public Vector3 PositionInLeftHand;
     public enum WeaponType
     {
         Sword,
-        Mace
+        Mace,
+        Sheild,
+        Bow,
+        Crossbow
     }
     public WeaponType TheWeapon;
     public enum Elements 
     {
+        None,
         Fire,
         Ice,
         Electric,
@@ -32,7 +42,9 @@ public class Weapon : MonoBehaviour
     void Start()
     {
         Player = GameObject.Find("Player");
-        PlayersHand = Player.transform.GetChild(1).gameObject;
+        PlayerScript = Player.GetComponent<Person2>();
+        PlayersRightHand = PlayerScript.PlayersRightHand;
+        PlayersLeftHand = PlayerScript.PlayersLeftHand;
         WeaponCollision = gameObject.transform.GetComponentsInChildren<BoxCollider>();
         Ground = LayerMask.GetMask("Ground");
         PlayerLayer = LayerMask.GetMask("Player");
@@ -42,13 +54,26 @@ public class Weapon : MonoBehaviour
         }
         gameObject.GetComponent<CapsuleCollider>().excludeLayers = LayerMask.GetMask("Default");
     }
-    public void Equip()
+    public void PickUp()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
         Destroy(rb);
-        transform.parent = PlayersHand.transform;
-        transform.localPosition = new Vector3(-0.09f, 1.93f, 0.13f);
-        transform.localEulerAngles = new Vector3(0.407f, 21.171f, 3.791f);
+        if (PlayerScript.EquipedWeaponRightHand == null)
+        {
+            transform.parent = PlayersRightHand.transform;
+            transform.localPosition = PositionInRightHand;
+            transform.localEulerAngles = RotaionInRightHand;
+        }
+        else if (PlayerScript.EquipedWeaponLeftHand == null)
+        {
+            transform.parent = PlayersLeftHand.transform;
+            transform.localPosition = PositionInLeftHand;
+            transform.localEulerAngles = RotaionInLeftHand;
+        }
+        else
+        {
+            Debug.Log("AllHandAreFull");
+        }
         foreach (GameObject Handle in Handles)
         {
             Handle.gameObject.GetComponent<BoxCollider>().enabled = false;
@@ -57,8 +82,9 @@ public class Weapon : MonoBehaviour
         {
             collider.excludeLayers = PlayerLayer + Ground;
         }
+        Debug.Log("WeaponHasBeenEquiped");
     }
-    public void UnEquip()
+    public void Drop()
     {
         gameObject.AddComponent<Rigidbody>();
         transform.parent = null;

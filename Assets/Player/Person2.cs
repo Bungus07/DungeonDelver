@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -28,11 +29,12 @@ public class Person2 : MonoBehaviour
     private GameManager gameManager;
     private HealthBar healthBarsript;
     private EnemyControls enemyscript;
-    private Animator SwordAnimator;
+    private Animator PlayerAnimator;
     public int WeaponDamage;
     [Header("Weapon Stuff")]
     private GameObject BelowFeet;
-    private GameObject EquipedWeapon;
+    public GameObject EquipedWeaponRightHand;
+    public GameObject EquipedWeaponLeftHand;
     [Header("Rolling")]
     public bool IsRolling;
     private float RollingAngle = 0;
@@ -41,6 +43,9 @@ public class Person2 : MonoBehaviour
     private Vector3 CurrentMoveDirectionInputs;
     public BoxCollider[] PlayerCollision;
     public GameObject Pivot;
+    [Header("RightHandAttacking")]
+    public GameObject PlayersRightHand;
+    public GameObject PlayersLeftHand;
     // Start is called before the first frame update
     void Start()
     {
@@ -51,14 +56,22 @@ public class Person2 : MonoBehaviour
         UnityEngine.Cursor.visible = false;
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         healthBarsript = gameObject.GetComponent<HealthBar>();
-        SwordAnimator = GameObject.Find("Hand").GetComponent<Animator>();
+        PlayerAnimator = gameObject.GetComponent<Animator>();
     }
-    private void Attack()
+    private void RightHandAttack()
     {
-        if (EquipedWeapon != null)
+        if (EquipedWeaponRightHand != null)
         {
-            SwordAnimator.SetTrigger("SwordSwing");
-            WeaponDamage = EquipedWeapon.GetComponent<Weapon>().WeaponDamage;
+            PlayerAnimator.SetTrigger("RightHandSwing");
+            WeaponDamage = EquipedWeaponRightHand.GetComponent<Weapon>().WeaponDamage;
+        }
+    }
+    private void LeftHandAttack()
+    {
+        if (EquipedWeaponLeftHand != null)
+        {
+            PlayerAnimator.SetTrigger("LeftHandSwing");
+            WeaponDamage = EquipedWeaponLeftHand.GetComponent<Weapon>().WeaponDamage;
         }
     }
     private void Roll()
@@ -118,16 +131,30 @@ public class Person2 : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            EquipedWeapon = BelowFeet;
-            EquipedWeapon.GetComponent<Weapon>().Equip();
-            BelowFeet = null;
+            BelowFeet.GetComponent<Weapon>().PickUp();
+            if (EquipedWeaponRightHand == null)
+            {
+                EquipedWeaponRightHand = BelowFeet;
+
+                BelowFeet = null;
+            }
+            else if (EquipedWeaponLeftHand == null)
+            {
+                EquipedWeaponLeftHand = BelowFeet;
+                
+                BelowFeet = null;
+            }
+            else
+            {
+                Debug.Log("HandsAreFull");
+            }
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
-            if (EquipedWeapon != null)
+            if (EquipedWeaponRightHand != null)
             {
-                EquipedWeapon.GetComponent<Weapon>().UnEquip();
-                EquipedWeapon = null;
+                EquipedWeaponRightHand.GetComponent<Weapon>().Drop();
+                EquipedWeaponRightHand = null;
             }
         }
        if (Input.GetKeyDown (KeyCode.Space))
@@ -151,9 +178,13 @@ public class Person2 : MonoBehaviour
         }
         GroundCheck();
         MoveDirection = transform.forward * Vert + transform.right * Hoz;
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            RightHandAttack();
+        }
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            Attack();
+            LeftHandAttack();
         }
         if (!Grounded)
         {
