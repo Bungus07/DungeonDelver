@@ -46,6 +46,7 @@ public class Person2 : MonoBehaviour
     [Header("RightHandAttacking")]
     public GameObject PlayersRightHand;
     public GameObject PlayersLeftHand;
+    private bool NoRotate;
     // Start is called before the first frame update
     void Start()
     {
@@ -57,6 +58,8 @@ public class Person2 : MonoBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         healthBarsript = gameObject.GetComponent<HealthBar>();
         PlayerAnimator = gameObject.GetComponent<Animator>();
+        ridge.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        NoRotate = true;
     }
     private void RightHandAttack()
     {
@@ -86,6 +89,8 @@ public class Person2 : MonoBehaviour
             }
             IsRolling = true;
             Debug.Log("ShouldBeRolling");
+            ridge.constraints = RigidbodyConstraints.None;
+            NoRotate = false;
         }
     }
     private void DamageTaken(int Amount, float Knockback)
@@ -229,11 +234,17 @@ public class Person2 : MonoBehaviour
                 IsRolling = false;
                 RollingAngle = 0;
                 ridge.useGravity = true;
+                ridge.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                NoRotate = true;
                 foreach (BoxCollider boxCollider in PlayerCollision)
                 {
                     boxCollider.enabled = true;
                 }
             }
+        }
+        if (NoRotate == true)
+        {
+            gameObject.transform.localEulerAngles = new Vector3(0, gameObject.transform.localEulerAngles.y, 0);
         }
     }
     private void FixedUpdate()

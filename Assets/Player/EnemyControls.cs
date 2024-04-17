@@ -43,6 +43,7 @@ public class EnemyControls : MonoBehaviour
     public float ReturnPostimerInterval;
     private Vector3 EnemyOrigonalPosition;
     private Quaternion EnemyOrigonalRotation;
+    private Vector3 EnemyOriginalEulerRotation;
 
     public enum EnemyState
     {
@@ -68,6 +69,7 @@ public class EnemyControls : MonoBehaviour
         EnemyOrigonalPosition = gameObject.transform.position;
         EnemyOrigonalRotation = gameObject.transform.rotation;
         Speed = BaseSpeed;
+        EnemyOriginalEulerRotation = gameObject.transform.localEulerAngles;
     }
     private void FixedUpdate()
     {
@@ -170,33 +172,33 @@ public class EnemyControls : MonoBehaviour
     }
     private void Move()
     {
-        float horizontalInput = isFacingFowards ? 1f : -1f;
-        Vector3 movement = new Vector3(horizontalInput * BaseSpeed, rb.velocity.y);
+        Vector3 movement = (transform.forward * BaseSpeed + new Vector3(0,rb.velocity.y,0));
         rb.velocity = movement;
         Debug.Log("EnemyShouldBeMoving");
         // Flip the enemy sprite based on direction
-        if ((horizontalInput > 0 && !isFacingFowards) || (horizontalInput < 0 && isFacingFowards))
-        {
-            Flip();
-        }
     }
     private void Jump()
     {
         // Add vertical force to make the enemy jump
         // rb.velocity = new Vector2(rb.velocity.x, jumpForce);
     }
-
     private void Flip()
     {
         // Flip the enemy's facing direction
         if (FlipCooldown == 0 )
         {
             isFacingFowards = !isFacingFowards;
-            Vector3 scale = transform.localScale;
-            scale.x *= -1;
-            transform.localScale = scale;
+            
             FlipCooldown = 1;
             Invoke("ResetFlip", 0.3f);
+            if (isFacingFowards)
+            {
+                gameObject.transform.eulerAngles = EnemyOriginalEulerRotation;
+            }
+            else if (!isFacingFowards)
+            {
+                gameObject.transform.eulerAngles = new Vector3(0,transform.eulerAngles.y + 180,0);
+            }
         }
     }
     private void ResetFlip()
