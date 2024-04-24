@@ -47,6 +47,7 @@ public class Person2 : MonoBehaviour
     public GameObject PlayersRightHand;
     public GameObject PlayersLeftHand;
     private bool NoRotate;
+    public float PlayersTotalSouls;
     // Start is called before the first frame update
     void Start()
     {

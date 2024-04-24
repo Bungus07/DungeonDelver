@@ -13,7 +13,6 @@ public class EnemyDetectionSphere : MonoBehaviour
     }
     void Update()
     {
-        gameObject.transform.position = Target.transform.position;
         if (EnemyScript.EnemyHealth <= 0)
         {
             Destroy(gameObject);

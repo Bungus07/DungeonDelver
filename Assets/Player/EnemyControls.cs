@@ -44,7 +44,7 @@ public class EnemyControls : MonoBehaviour
     private Vector3 EnemyOrigonalPosition;
     private Quaternion EnemyOrigonalRotation;
     private Vector3 EnemyOriginalEulerRotation;
-
+    public float Souls;
     public enum EnemyState
     {
         [Header("AIstates")]
@@ -60,12 +60,12 @@ public class EnemyControls : MonoBehaviour
     // private Vector3 MoveDirection;
     private void Start()
     {
+        Player = GameObject.Find("PlayerParent");
         rb = GetComponent<Rigidbody>();
-        PlayerScript = GameObject.FindWithTag("Player").GetComponent<Person2>();
+        PlayerScript = Player.GetComponent<Person2>();
         EnemyHealthBar = gameObject.GetComponentInChildren<Slider>();
         EnemyHealthBar.maxValue = EnemyHealth;
         EnemyHealthBar.value = EnemyHealth;
-        Player = GameObject.FindWithTag("Player");
         EnemyOrigonalPosition = gameObject.transform.position;
         EnemyOrigonalRotation = gameObject.transform.rotation;
         Speed = BaseSpeed;
@@ -163,6 +163,10 @@ public class EnemyControls : MonoBehaviour
     {
         EnemyHealth = EnemyHealth - DamageAmount;
         EnemyHealthBar.value = EnemyHealth;
+        if (EnemyHealth <= 0) 
+        {
+            EnemyDeath();
+        }
     }
     public void PlayerDetect()
     {
@@ -209,14 +213,16 @@ public class EnemyControls : MonoBehaviour
     {
         if (collision.gameObject.tag == ("Weapon"))
         {
-            DamageEnemy(PlayerScript.WeaponDamage);
+            DamageEnemy(collision.gameObject.transform.GetComponentInParent<Weapon>().WeaponDamage);
             Debug.Log("EnemyHasTakenDamage");
         }
+        Debug.Log("EnemyHasTriggeredWith " + collision.gameObject.tag);
     }
     public void EnemyDeath()
     {
         WhereDied = gameObject.transform;
-        Instantiate(HealingOrb, WhereDied.position, Quaternion.identity);
+        //Instantiate(HealingOrb, WhereDied.position, Quaternion.identity);
+        PlayerScript.PlayersTotalSouls += Souls;
         GameObject.Destroy(gameObject);
         Debug.Log("HasDroppedOrb");
     }

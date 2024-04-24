@@ -41,7 +41,7 @@ public class Weapon : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Player = GameObject.Find("Player");
+        Player = GameObject.Find("PlayerParent");
         PlayerScript = Player.GetComponent<Person2>();
         PlayersRightHand = PlayerScript.PlayersRightHand;
         PlayersLeftHand = PlayerScript.PlayersLeftHand;
@@ -81,6 +81,7 @@ public class Weapon : MonoBehaviour
         foreach (var collider in WeaponCollision)
         {
             collider.excludeLayers = PlayerLayer + Ground;
+            collider.isTrigger = true;
         }
         Debug.Log("WeaponHasBeenEquiped");
     }
@@ -95,6 +96,7 @@ public class Weapon : MonoBehaviour
         foreach (var collider in WeaponCollision)
         {
             collider.excludeLayers = PlayerLayer;
+            collider.isTrigger = false;
         }
     }
 }
