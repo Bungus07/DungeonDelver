@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using UnityEngine;
 using UnityEngine.UIElements;
+using TMPro;
 
 public class Person2 : MonoBehaviour
 {
@@ -48,6 +49,17 @@ public class Person2 : MonoBehaviour
     public GameObject PlayersLeftHand;
     private bool NoRotate;
     public float PlayersTotalSouls;
+    [Header("Levels")]
+    public int PlayerLevel;
+    public int Vitality;
+    public int Strength;
+    public int Agility;
+    private TextMeshProUGUI HpText;
+    private TextMeshProUGUI StrengthText;
+    private TextMeshProUGUI AgilityText;
+    private int AttackStat;
+    private int GainsLevel;
+    public GameObject LevelPanel;
     // Start is called before the first frame update
     void Start()
     {
@@ -61,6 +73,21 @@ public class Person2 : MonoBehaviour
         PlayerAnimator = gameObject.GetComponent<Animator>();
         ridge.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         NoRotate = true;
+        HpText = GameObject.Find("Hp").GetComponent<TextMeshProUGUI>();
+        StrengthText = GameObject.Find("Strength").GetComponent<TextMeshProUGUI>();
+        AgilityText = GameObject.Find("Agility").GetComponent<TextMeshProUGUI>();
+        HpText.text = "Hp " + gameObject.GetComponent<HealthBar>().CurrentHealth;
+        StrengthText.text = "Strength " + AttackStat;
+        AgilityText.text = "Agility " + BaseSpeed;
+    }
+    public void LevelUpVitality()
+    {
+        TextMeshProUGUI HpAfterLevel = GameObject.Find("HpAfterLevel").GetComponent<TextMeshProUGUI>();
+        gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
+        gameObject.GetComponent<HealthBar>().MaxHealth += 2;
+        HpAfterLevel.text = gameObject.GetComponent<HealthBar>().CurrentHealth.ToString();
+        gameObject.GetComponent<HealthBar>().TheHealthBar.maxValue = gameObject.GetComponent<HealthBar>().MaxHealth += 2;
+        gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
     }
     private void RightHandAttack()
     {
@@ -135,6 +162,19 @@ public class Person2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Tab)) 
+        {
+            if (LevelPanel.activeSelf == true)
+            {
+                LevelPanel.SetActive(false);
+                UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            }
+            else
+            {
+                LevelPanel.SetActive(true);
+                UnityEngine.Cursor.lockState = CursorLockMode.None;
+            }
+        }
         if (Input.GetKeyDown(KeyCode.E))
         {
             BelowFeet.GetComponent<Weapon>().PickUp();
