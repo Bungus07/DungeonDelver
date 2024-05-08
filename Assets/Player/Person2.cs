@@ -48,19 +48,29 @@ public class Person2 : MonoBehaviour
     public GameObject PlayersRightHand;
     public GameObject PlayersLeftHand;
     private bool NoRotate;
-    public float PlayersTotalSouls;
     [Header("Levels")]
-    public int PlayerLevel;
+    public int PlayerLevel = 1;
     public int Vitality;
     public int Strength;
+    public int StrenghtLevel;
     public int Agility;
+    private int AgilityLevel;
     private TextMeshProUGUI HpText;
     private TextMeshProUGUI StrengthText;
     private TextMeshProUGUI AgilityText;
     private int AttackStat;
     private int GainsLevel;
     public GameObject LevelPanel;
-    // Start is called before the first frame update
+    public int PlayersTotalSouls;
+    public float SoulsForOneLevel;
+    private float SoulsCost;
+    private int PlayersUnspentLevel;
+    private int PlayersUndecidedLevel;
+    public TextMeshProUGUI PlayersLevelText;
+    private bool LevelUIIsOpen;
+    private TextMeshProUGUI VitalityAfterLevel;
+    private TextMeshProUGUI StrenghtAfterLevel;
+    private TextMeshProUGUI AgilityAfterLevel;
     void Start()
     {
         ridge = GetComponent<Rigidbody>();
@@ -79,15 +89,157 @@ public class Person2 : MonoBehaviour
         HpText.text = "Hp " + gameObject.GetComponent<HealthBar>().CurrentHealth;
         StrengthText.text = "Strength " + AttackStat;
         AgilityText.text = "Agility " + BaseSpeed;
+        VitalityAfterLevel = GameObject.Find("HpAfterLevel").GetComponent<TextMeshProUGUI>();
+        StrenghtAfterLevel = GameObject.Find("AttackAfterLevel").GetComponent<TextMeshProUGUI>();
+        AgilityAfterLevel = GameObject.Find("SpeedAfterLevel").GetComponent<TextMeshProUGUI>();
+        RefreshLevels();
+    }
+    private void RefreshLevels()
+    {
+        HpText.text = "Vitality Level = " + Vitality;
+        VitalityAfterLevel.text = "Hp = " + healthBarsript.MaxHealth;
+
+        StrengthText.text = "Strength Level = " + StrenghtLevel;
+        StrenghtAfterLevel.text = "Strength = " + Strength;
+
+        AgilityText.text = "Agility Level = " + AgilityLevel;
+        AgilityAfterLevel.text = "Agility = " + Agility;
+    }
+    public void Death()
+    {
+        Debug.Log("Player Died");
+        healthBarsript.CurrentHealth = healthBarsript.MaxHealth;
+        PlayersTotalSouls = 0;
+        RespawnPlayer();
     }
     public void LevelUpVitality()
     {
-        TextMeshProUGUI HpAfterLevel = GameObject.Find("HpAfterLevel").GetComponent<TextMeshProUGUI>();
-        gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
-        gameObject.GetComponent<HealthBar>().MaxHealth += 2;
-        HpAfterLevel.text = gameObject.GetComponent<HealthBar>().CurrentHealth.ToString();
-        gameObject.GetComponent<HealthBar>().TheHealthBar.maxValue = gameObject.GetComponent<HealthBar>().MaxHealth += 2;
-        gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
+        if (PlayersUnspentLevel > 0)
+        {
+            TextMeshProUGUI HpAfterLevel = GameObject.Find("HpAfterLevel").GetComponent<TextMeshProUGUI>();
+            gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
+            gameObject.GetComponent<HealthBar>().MaxHealth += 2;
+            HpAfterLevel.text = gameObject.GetComponent<HealthBar>().CurrentHealth.ToString();
+            gameObject.GetComponent<HealthBar>().TheHealthBar.maxValue = gameObject.GetComponent<HealthBar>().MaxHealth += 2;
+            gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
+            PlayersUnspentLevel--;
+            PlayersUndecidedLevel++;
+            PlayerLevel++;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUnspentLevel !> 0)
+        {
+            Debug.Log("You Need More Souls");
+        }
+    }
+    public void LevelDownVitality()
+    {
+        if (PlayersUndecidedLevel > 0)
+        {
+            gameObject.GetComponent<HealthBar>().CurrentHealth -= 2;
+            gameObject.GetComponent<HealthBar>().MaxHealth -= 2;
+            PlayersUnspentLevel++;
+            PlayersUndecidedLevel--;
+            PlayerLevel--;
+            gameObject.GetComponent<HealthBar>().TheHealthBar.maxValue = gameObject.GetComponent<HealthBar>().MaxHealth -= 2;
+            gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth -= 2;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUndecidedLevel !> 0)
+        {
+            Debug.Log("You havent got any undecided levels");
+        }
+    }
+    public void LevelUpStrength()
+    {
+        if (PlayersUnspentLevel > 0)
+        {
+            StrenghtLevel += 1;
+            PlayersUnspentLevel--;
+            PlayersUndecidedLevel++;
+            Strength += 1;
+            PlayerLevel++;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUnspentLevel! > 0)
+        {
+            Debug.Log("You need More Souls");
+        }
+    }
+    public void LevelDownStrength()
+    {
+        if (PlayersUndecidedLevel > 0)
+        {
+            Strength -= 1;
+            StrenghtLevel -= 1;
+            PlayersUnspentLevel++;
+            PlayersUndecidedLevel--;
+            PlayerLevel--;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUndecidedLevel! > 0)
+        {
+            Debug.Log("You havent got any undecided levels");
+        }
+    }
+    public void LevelUpAgility()
+    {
+        if (PlayersUnspentLevel > 0)
+        {
+            AgilityLevel += 1;
+            PlayersUnspentLevel--;
+            PlayersUndecidedLevel++;
+            Agility += 2;
+            BaseSpeed += Agility;
+            Speed = BaseSpeed;
+            PlayerLevel++;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUnspentLevel! > 0)
+        {
+            Debug.Log("You need More Souls");
+        }
+    }
+    public void LevelDownAgility()
+    {
+        if (PlayersUndecidedLevel > 0)
+        {
+            AgilityLevel -= 1;
+            PlayersUnspentLevel++;
+            PlayersUndecidedLevel--;
+            BaseSpeed -= Agility;
+            Agility -= 2;
+            Speed = BaseSpeed;
+            PlayerLevel--;
+            PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
+            RefreshLevels();
+        }
+        else if (PlayersUndecidedLevel! > 0)
+        {
+            Debug.Log("You havent got any undecided levels");
+        }
+    }
+    public void ConfirmLevel()
+    {
+        if (PlayersUnspentLevel == 0)
+        {
+            PlayersUndecidedLevel = 0;
+            RefreshLevels();
+        }
+    }
+    public void CheckForLevels()
+    {
+        if (PlayersTotalSouls >= SoulsForOneLevel) 
+        {
+            PlayersUnspentLevel++;
+            SoulsCost = SoulsForOneLevel;
+            SoulsForOneLevel = SoulsCost * 1.1f;
+        }
     }
     private void RightHandAttack()
     {
@@ -168,11 +320,13 @@ public class Person2 : MonoBehaviour
             {
                 LevelPanel.SetActive(false);
                 UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+                UnityEngine.Cursor.visible = false;
             }
             else
             {
                 LevelPanel.SetActive(true);
                 UnityEngine.Cursor.lockState = CursorLockMode.None;
+                UnityEngine.Cursor.visible = true;
             }
         }
         if (Input.GetKeyDown(KeyCode.E))

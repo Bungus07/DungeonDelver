@@ -44,7 +44,7 @@ public class EnemyControls : MonoBehaviour
     private Vector3 EnemyOrigonalPosition;
     private Quaternion EnemyOrigonalRotation;
     private Vector3 EnemyOriginalEulerRotation;
-    public float Souls;
+    public int Souls;
     public enum EnemyState
     {
         [Header("AIstates")]
@@ -213,7 +213,7 @@ public class EnemyControls : MonoBehaviour
     {
         if (collision.gameObject.tag == ("Weapon"))
         {
-            DamageEnemy(collision.gameObject.transform.GetComponentInParent<Weapon>().WeaponDamage);
+            DamageEnemy(collision.gameObject.transform.GetComponentInParent<Weapon>().WeaponDamage + PlayerScript.Strength);
             Debug.Log("EnemyHasTakenDamage");
         }
         Debug.Log("EnemyHasTriggeredWith " + collision.gameObject.tag);
@@ -223,6 +223,7 @@ public class EnemyControls : MonoBehaviour
         WhereDied = gameObject.transform;
         //Instantiate(HealingOrb, WhereDied.position, Quaternion.identity);
         PlayerScript.PlayersTotalSouls += Souls;
+        PlayerScript.CheckForLevels();
         GameObject.Destroy(gameObject);
         Debug.Log("HasDroppedOrb");
     }
