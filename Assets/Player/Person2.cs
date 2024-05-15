@@ -84,8 +84,8 @@ public class Person2 : MonoBehaviour
         ridge.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         NoRotate = true;
         HpText = GameObject.Find("Hp").GetComponent<TextMeshProUGUI>();
-        StrengthText = GameObject.Find("Strength").GetComponent<TextMeshProUGUI>();
-        AgilityText = GameObject.Find("Agility").GetComponent<TextMeshProUGUI>();
+        StrengthText = GameObject.Find("Attack").GetComponent<TextMeshProUGUI>();
+        AgilityText = GameObject.Find("Speed").GetComponent<TextMeshProUGUI>();
         HpText.text = "Hp " + gameObject.GetComponent<HealthBar>().CurrentHealth;
         StrengthText.text = "Strength " + AttackStat;
         AgilityText.text = "Agility " + BaseSpeed;
@@ -93,6 +93,7 @@ public class Person2 : MonoBehaviour
         StrenghtAfterLevel = GameObject.Find("AttackAfterLevel").GetComponent<TextMeshProUGUI>();
         AgilityAfterLevel = GameObject.Find("SpeedAfterLevel").GetComponent<TextMeshProUGUI>();
         RefreshLevels();
+        LevelPanel.SetActive(false);
     }
     private void RefreshLevels()
     {
@@ -110,6 +111,7 @@ public class Person2 : MonoBehaviour
         Debug.Log("Player Died");
         healthBarsript.CurrentHealth = healthBarsript.MaxHealth;
         PlayersTotalSouls = 0;
+        healthBarsript.TheHealthBar.value = healthBarsript.MaxHealth;
         RespawnPlayer();
     }
     public void LevelUpVitality()
@@ -275,8 +277,8 @@ public class Person2 : MonoBehaviour
     }
     private void DamageTaken(int Amount, float Knockback)
     {
-        Knockback = enemyscript.KnockBackDistance;
-        Amount = enemyscript.EnemyDamage;
+       // Knockback = enemyscript.KnockBackDistance;
+       // Amount = enemyscript.EnemyDamage;
         healthBarsript.CurrentHealth = healthBarsript.CurrentHealth - Amount;
         ridge.AddForce(Vector3.back * Knockback, ForceMode.Force);
         healthBarsript.TheHealthBar.value = healthBarsript.CurrentHealth;
@@ -314,6 +316,10 @@ public class Person2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (healthBarsript.CurrentHealth <= 0)
+        {
+            Death();
+        }
         if (Input.GetKeyDown(KeyCode.Tab)) 
         {
             if (LevelPanel.activeSelf == true)
@@ -524,6 +530,10 @@ public class Person2 : MonoBehaviour
         {
             enemyscript = collision.gameObject.GetComponent<EnemyControls>();
             DamageTaken(enemyscript.EnemyDamage,enemyscript.KnockBackDistance);
+        }
+        if ((collision.gameObject.tag == ("Hazard")))
+        {
+            DamageTaken(collision.gameObject.GetComponent<Hazard>().Damage, collision.gameObject.GetComponent<Hazard>().Knockback);
         }
     }
     public void RespawnPlayer()
