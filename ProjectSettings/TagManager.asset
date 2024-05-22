@@ -9,6 +9,7 @@ TagManager:
   - EnemyDetectionRadious
   - Wall
   - Hazard
+  - Souls
   layers:
   - Default
   - TransparentFX

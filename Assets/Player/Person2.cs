@@ -66,11 +66,17 @@ public class Person2 : MonoBehaviour
     private float SoulsCost;
     private int PlayersUnspentLevel;
     private int PlayersUndecidedLevel;
+    private int PlayersUndecidedStrengthLevel;
+    private int PlayersUndecidedVitalityLevel;
+    private int PlayersUndecidedAgilityLevel;
     public TextMeshProUGUI PlayersLevelText;
     private bool LevelUIIsOpen;
     private TextMeshProUGUI VitalityAfterLevel;
     private TextMeshProUGUI StrenghtAfterLevel;
     private TextMeshProUGUI AgilityAfterLevel;
+    public GameObject Twig;
+    private GameObject DroppedTwig;
+    private int CurrentSoulsCost;
     void Start()
     {
         ridge = GetComponent<Rigidbody>();
@@ -95,6 +101,14 @@ public class Person2 : MonoBehaviour
         RefreshLevels();
         LevelPanel.SetActive(false);
     }
+    public void DropSouls()
+    {
+        DroppedTwig = Instantiate(Twig, gameObject.transform.position,Quaternion.identity);
+        Twig.gameObject.GetComponent<Twig>().HeldSouls = PlayersTotalSouls;
+        PlayersTotalSouls = 0;
+        PlayersUnspentLevel = 0;
+        PlayersTotalSouls = CurrentSoulsCost;
+    }
     private void RefreshLevels()
     {
         HpText.text = "Vitality Level = " + Vitality;
@@ -110,7 +124,7 @@ public class Person2 : MonoBehaviour
     {
         Debug.Log("Player Died");
         healthBarsript.CurrentHealth = healthBarsript.MaxHealth;
-        PlayersTotalSouls = 0;
+        DropSouls();
         healthBarsript.TheHealthBar.value = healthBarsript.MaxHealth;
         RespawnPlayer();
     }
@@ -126,6 +140,7 @@ public class Person2 : MonoBehaviour
             gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth += 2;
             PlayersUnspentLevel--;
             PlayersUndecidedLevel++;
+            PlayersUndecidedVitalityLevel++;
             PlayerLevel++;
             PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
             RefreshLevels();
@@ -137,12 +152,13 @@ public class Person2 : MonoBehaviour
     }
     public void LevelDownVitality()
     {
-        if (PlayersUndecidedLevel > 0)
+        if (PlayersUndecidedLevel > 0 && PlayersUndecidedVitalityLevel > 0)
         {
             gameObject.GetComponent<HealthBar>().CurrentHealth -= 2;
             gameObject.GetComponent<HealthBar>().MaxHealth -= 2;
             PlayersUnspentLevel++;
             PlayersUndecidedLevel--;
+            PlayersUndecidedVitalityLevel--;
             PlayerLevel--;
             gameObject.GetComponent<HealthBar>().TheHealthBar.maxValue = gameObject.GetComponent<HealthBar>().MaxHealth -= 2;
             gameObject.GetComponent<HealthBar>().TheHealthBar.value = gameObject.GetComponent<HealthBar>().CurrentHealth -= 2;
@@ -161,6 +177,7 @@ public class Person2 : MonoBehaviour
             StrenghtLevel += 1;
             PlayersUnspentLevel--;
             PlayersUndecidedLevel++;
+            PlayersUndecidedStrengthLevel++;
             Strength += 1;
             PlayerLevel++;
             PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
@@ -173,12 +190,13 @@ public class Person2 : MonoBehaviour
     }
     public void LevelDownStrength()
     {
-        if (PlayersUndecidedLevel > 0)
+        if (PlayersUndecidedLevel > 0 && PlayersUndecidedStrengthLevel > 0)
         {
             Strength -= 1;
             StrenghtLevel -= 1;
             PlayersUnspentLevel++;
             PlayersUndecidedLevel--;
+            PlayersUndecidedStrengthLevel--;
             PlayerLevel--;
             PlayersLevelText.text = "PlayerLevel " + PlayerLevel;
             RefreshLevels();
@@ -195,6 +213,7 @@ public class Person2 : MonoBehaviour
             AgilityLevel += 1;
             PlayersUnspentLevel--;
             PlayersUndecidedLevel++;
+            PlayersUndecidedAgilityLevel++;
             Agility += 2;
             BaseSpeed += Agility;
             Speed = BaseSpeed;
@@ -209,11 +228,12 @@ public class Person2 : MonoBehaviour
     }
     public void LevelDownAgility()
     {
-        if (PlayersUndecidedLevel > 0)
+        if (PlayersUndecidedLevel > 0 && PlayersUndecidedAgilityLevel > 0)
         {
             AgilityLevel -= 1;
             PlayersUnspentLevel++;
             PlayersUndecidedLevel--;
+            PlayersUndecidedAgilityLevel--;
             BaseSpeed -= Agility;
             Agility -= 2;
             Speed = BaseSpeed;
@@ -231,6 +251,10 @@ public class Person2 : MonoBehaviour
         if (PlayersUnspentLevel == 0)
         {
             PlayersUndecidedLevel = 0;
+            PlayersUndecidedAgilityLevel = 0;
+            PlayersUndecidedStrengthLevel = 0;
+            PlayersUndecidedVitalityLevel = 0;
+            CurrentSoulsCost = PlayersTotalSouls;
             RefreshLevels();
         }
     }
@@ -304,6 +328,12 @@ public class Person2 : MonoBehaviour
         if (Collider.gameObject.tag == ("Weapon"))
         {
             BelowFeet = Collider.gameObject;
+        }
+        if (Collider.gameObject.tag == ("Souls"))
+        {
+            PlayersTotalSouls += Collider.gameObject.GetComponent<Twig>().HeldSouls;
+            CheckForLevels();
+            Destroy(Collider.gameObject);
         }
     }
     private void OnTriggerExit(Collider collider)
